@@ -60,7 +60,7 @@ export default function Navbar() {
               letterSpacing: '0.04em',
             }}
           >
-            v0.3.1
+            v0.3.4
           </span>
         </NavLink>
 
@@ -88,7 +88,7 @@ export default function Navbar() {
 
           {/* GitHub */}
           <a
-            href="https://github.com/npltk/npltk"
+            href="https://github.com/anurag3345/npltk"
             target="_blank"
             rel="noreferrer"
             style={{

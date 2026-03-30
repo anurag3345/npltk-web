@@ -94,7 +94,7 @@ export default function TeamPage() {
         <SimpleButton
           variant="outline"
           size="sm"
-          href="https://github.com/npltk/npltk"
+          href="https://github.com/anurag3345/npltk"
         >
           Contribute on GitHub →
         </SimpleButton>

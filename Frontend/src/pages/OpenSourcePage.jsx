@@ -159,10 +159,10 @@ export default function OpenSourcePage() {
 
       {/* CTAs */}
       <div style={{ marginTop: 36, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <SimpleButton variant="primary" href="https://github.com/npltk/npltk">
+        <SimpleButton variant="primary" href="https://github.com/anurag3345/npltk">
           <GitHubIcon /> View on GitHub
         </SimpleButton>
-        <SimpleButton variant="outline" href="https://github.com/npltk/npltk/blob/main/CONTRIBUTING.md">
+        <SimpleButton variant="outline" href="https://github.com/anurag3345/npltk/blob/main/CONTRIBUTING.md">
           Read CONTRIBUTING.md
         </SimpleButton>
       </div>

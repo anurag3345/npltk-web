@@ -1,16 +1,19 @@
 import { useState } from 'react'
-import InputArea   from '../components/InputArea'
-import SimpleButton from '../components/SimpleButton'
+import InputArea from '../components/InputArea'
+import PlaygroundControls from '../components/playground/PlaygroundControls'
+import PlaygroundOutput from '../components/playground/PlaygroundOutput'
 
 const FEATURES = [
-  { value: 'tokenizer',  label: 'Tokenizer' },
-  { value: 'stopwords',  label: 'Stop Word Removal' },
+  { value: 'pipeline', label: 'Full Pipeline' },
+  { value: 'tokenizer', label: 'Tokenizer' },
+  { value: 'stopwords', label: 'Stop Word Removal' },
   { value: 'lemmatizer', label: 'Lemmatizer' },
-  { value: 'pos',        label: 'POS Tagger' },
-  { value: 'ner',        label: 'NER' },
+  { value: 'pos', label: 'POS Tagger' },
+  { value: 'ner', label: 'NER' },
 ]
 
 const API_ENDPOINTS = {
+  pipeline: '/api/tools/pipeline',
   tokenizer: '/api/tools/tokenize',
   stopwords: '/api/tools/stopwords',
   lemmatizer: '/api/tools/lemmatize',
@@ -20,38 +23,53 @@ const API_ENDPOINTS = {
 
 async function runFeature(feature, text) {
   const endpoint = API_ENDPOINTS[feature]
+
   if (!endpoint) {
     throw new Error(`Unsupported feature: ${feature}`)
   }
+
+  const payload =
+    feature === 'pipeline'
+      ? {
+          text,
+          mode: 'hybrid',
+          split_into_sentences: true,
+          keep_punct: true,
+          subword: true,
+          fallback_to_rule: true,
+        }
+      : { text }
 
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify(payload),
   })
 
   const data = await response.json()
+
   if (!response.ok) {
     throw new Error(data?.detail || 'Request failed')
   }
 
-  return JSON.stringify(data, null, 2)
+  return data
 }
 
 export default function PlaygroundPage() {
-  const [input,   setInput]   = useState('नेपाल सुन्दर छ')
-  const [feature, setFeature] = useState('tokenizer')
-  const [output,  setOutput]  = useState('')
+  const [input, setInput] = useState('नेपाल सुन्दर छ')
+  const [feature, setFeature] = useState('pipeline')
+  const [output, setOutput] = useState(null)
   const [running, setRunning] = useState(false)
-  const [error,   setError]   = useState('')
+  const [error, setError] = useState('')
 
   const run = async () => {
     if (!input.trim()) return
+
     setRunning(true)
     setError('')
-    setOutput('')
+    setOutput(null)
 
     try {
       const result = await runFeature(feature, input)
@@ -64,158 +82,93 @@ export default function PlaygroundPage() {
   }
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: '48px 24px' }}>
-      <h1
-        style={{
-          fontSize: 24,
-          fontWeight: 600,
-          color: '#250735',
-          marginBottom: 6,
-          letterSpacing: '-0.02em',
-          fontFamily: 'IBM Plex Sans, sans-serif',
-        }}
-      >
-        Playground
-      </h1>
-      <p
-        style={{
-          fontSize: 14,
-          color: '#6b7280',
-          marginBottom: 32,
-          fontFamily: 'IBM Plex Sans, sans-serif',
-        }}
-      >
-        Try NPLTK modules interactively. Enter Nepali text and select a feature to run.
-      </p>
-
-      {/* Input */}
-      <InputArea
-        value={input}
-        onChange={setInput}
-        label="input.txt"
-        placeholder="Enter Nepali text here…"
-        rows={5}
-      />
-
-      {/* Controls */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          margin: '14px 0',
-          flexWrap: 'wrap',
-        }}
-      >
-        <select
-          value={feature}
-          onChange={(e) => setFeature(e.target.value)}
+    <div
+      style={{
+        maxWidth: 960,
+        margin: '0 auto',
+        padding: '48px 24px 64px',
+      }}
+    >
+      <div style={{ marginBottom: 28 }}>
+        <h1
           style={{
-            padding: '7px 12px',
-            border: '1px solid #e5e7eb',
-            borderRadius: 5,
-            fontSize: 13.5,
-            background: '#fff',
-            color: '#111118',
+            fontSize: 28,
+            fontWeight: 700,
+            color: '#250735',
+            marginBottom: 8,
+            letterSpacing: '-0.03em',
             fontFamily: 'IBM Plex Sans, sans-serif',
-            outline: 'none',
-            cursor: 'pointer',
           }}
         >
-          {FEATURES.map((f) => (
-            <option key={f.value} value={f.value}>
-              {f.label}
-            </option>
-          ))}
-        </select>
+          Playground
+        </h1>
 
-        <SimpleButton variant="primary" onClick={run} disabled={running}>
-          {running ? 'Running…' : 'Run →'}
-        </SimpleButton>
-
-        {output && !running && (
-          <span style={{ fontSize: 12.5, color: '#9ca3af', fontFamily: 'IBM Plex Mono, monospace' }}>
-            Done.
-          </span>
-        )}
-
-        {error && !running && (
-          <span style={{ fontSize: 12.5, color: '#b91c1c', fontFamily: 'IBM Plex Mono, monospace' }}>
-            Error: {error}
-          </span>
-        )}
+        <p
+          style={{
+            fontSize: 14,
+            color: '#6b7280',
+            lineHeight: 1.7,
+            maxWidth: 720,
+            fontFamily: 'IBM Plex Sans, sans-serif',
+          }}
+        >
+          Try NPLTK modules interactively. Enter Nepali text and select a feature
+          to run. You can test tokenization, stop-word removal, lemmatization,
+          POS tagging, NER, or the full pipeline in one place.
+        </p>
       </div>
 
-      {/* Output panel */}
       <div
         style={{
-          border: '1px solid #e5e7eb',
-          borderRadius: 6,
-          overflow: 'hidden',
+          display: 'grid',
+          gap: 18,
         }}
       >
         <div
           style={{
-            background: '#f8f8f9',
-            borderBottom: '1px solid #e5e7eb',
-            padding: '9px 14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: 12,
-            fontFamily: 'IBM Plex Mono, monospace',
-            color: '#6b7280',
+            border: '1px solid #e5e7eb',
+            borderRadius: 10,
+            background: '#ffffff',
+            padding: 18,
           }}
         >
-          <span>output</span>
-          <span
-            style={{
-              background: '#f3e8ff',
-              color: '#7c3aed',
-              fontSize: 11,
-              fontFamily: 'IBM Plex Mono, monospace',
-              padding: '2px 8px',
-              borderRadius: 3,
-            }}
-          >
-            {FEATURES.find((f) => f.value === feature)?.label}
-          </span>
+          <InputArea
+            value={input}
+            onChange={setInput}
+            label="input.txt"
+            placeholder="Enter Nepali text here…"
+            rows={6}
+          />
+
+          <PlaygroundControls
+            feature={feature}
+            setFeature={setFeature}
+            features={FEATURES}
+            run={run}
+            running={running}
+            output={output}
+            error={error}
+          />
         </div>
 
-        <div
-          style={{
-            fontFamily: 'IBM Plex Mono, monospace',
-            fontSize: 13,
-            padding: 16,
-            minHeight: 90,
-            color: '#111118',
-            lineHeight: 1.7,
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-          }}
-        >
-          {running ? (
-            <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>Processing…</span>
-          ) : output ? (
-            output
-          ) : (
-            <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>
-              Output will appear here after you press Run.
-            </span>
-          )}
-        </div>
+        <PlaygroundOutput
+          feature={feature}
+          features={FEATURES}
+          output={output}
+          running={running}
+        />
       </div>
 
       <p
         style={{
           fontSize: 12.5,
           color: '#9ca3af',
-          marginTop: 10,
+          marginTop: 12,
           fontFamily: 'IBM Plex Sans, sans-serif',
         }}
       >
         * Connected to FastAPI backend endpoints for tokenization, stop-word
-        removal, and lemmatization.
+        removal, lemmatization, POS tagging, NER, and full pipeline.
       </p>
     </div>
   )

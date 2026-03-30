@@ -40,7 +40,7 @@ export default function Footer() {
           <Link to="/docs"       style={s.link}>Docs</Link>
           <Link to="/opensource" style={s.link}>Open Source</Link>
           <a
-            href="https://github.com/npltk/npltk"
+            href="https://github.com/anurag3345/npltk"
             target="_blank"
             rel="noreferrer"
             style={s.link}
