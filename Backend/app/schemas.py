@@ -1,5 +1,6 @@
+from typing import Any, Dict, List, Literal, Optional, Union
+
 from pydantic import BaseModel, Field
-from typing import List, Optional, Any
 
 
 class TextRequest(BaseModel):
@@ -8,16 +9,22 @@ class TextRequest(BaseModel):
 
 class TokenizeRequest(BaseModel):
     text: str = Field(..., min_length=1)
-    mode: str = "hybrid"
+    mode: Literal["hybrid", "rule"] = "hybrid"
     split_into_sentences: bool = True
     keep_punct: bool = True
     subword: bool = True
     fallback_to_rule: bool = True
 
 
+class TransformItem(BaseModel):
+    rule: str
+    before: str
+    after: str
+
+
 class NormalizeResponse(BaseModel):
     text: str
-    transforms: List[dict]
+    transforms: List[TransformItem]
 
 
 class TokenizeResponse(BaseModel):
@@ -25,16 +32,42 @@ class TokenizeResponse(BaseModel):
 
 
 class SentenceTokenizeResponse(BaseModel):
-    sentences: List[Any]
+    sentences: List[Union[List[str], str]]
 
 
 class StopwordResponse(BaseModel):
     filtered_tokens: List[str]
-    info: dict
+    info: Dict[str, Any]
 
 
 class LemmatizeResponse(BaseModel):
     lemmas: List[str]
+
+
+class POSTagItem(BaseModel):
+    token: str
+    tag: str
+
+
+class POSResponse(BaseModel):
+    pos_tags: List[POSTagItem]
+
+
+class NERTagItem(BaseModel):
+    token: str
+    tag: str
+
+
+class NEREntityItem(BaseModel):
+    text: str
+    label: str
+    start: int
+    end: int
+
+
+class NERResponse(BaseModel):
+    ner_tags: List[NERTagItem]
+    entities: List[NEREntityItem]
 
 
 class FullPipelineResponse(BaseModel):
@@ -43,5 +76,8 @@ class FullPipelineResponse(BaseModel):
     tokens: List[str]
     filtered_tokens: List[str]
     lemmas: List[str]
-    stopword_info: dict
-    transforms: List[dict]
+    pos_tags: List[POSTagItem]
+    ner_tags: List[NERTagItem]
+    entities: List[NEREntityItem]
+    stopword_info: Dict[str, Any]
+    transforms: List[TransformItem]

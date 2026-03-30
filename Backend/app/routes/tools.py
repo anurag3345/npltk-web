@@ -8,6 +8,8 @@ from app.schemas import (
     SentenceTokenizeResponse,
     StopwordResponse,
     LemmatizeResponse,
+    POSResponse,
+    NERResponse,
     FullPipelineResponse,
 )
 from app.services.npltk_service import (
@@ -16,6 +18,8 @@ from app.services.npltk_service import (
     tokenize_sentences,
     remove_stopwords,
     lemmatize_text,
+    pos_tag_text,
+    ner_tag_text,
     full_pipeline,
 )
 
@@ -99,6 +103,36 @@ def lemmatize(req: TokenizeRequest):
         return {"lemmas": lemmas}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Lemmatization failed: {str(e)}")
+
+
+@router.post("/pos", response_model=POSResponse)
+def pos(req: TokenizeRequest):
+    try:
+        return pos_tag_text(
+            text=req.text,
+            mode=req.mode,
+            split_into_sentences=req.split_into_sentences,
+            keep_punct=req.keep_punct,
+            subword=req.subword,
+            fallback_to_rule=req.fallback_to_rule,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"POS tagging failed: {str(e)}")
+
+
+@router.post("/ner", response_model=NERResponse)
+def ner(req: TokenizeRequest):
+    try:
+        return ner_tag_text(
+            text=req.text,
+            mode=req.mode,
+            split_into_sentences=req.split_into_sentences,
+            keep_punct=req.keep_punct,
+            subword=req.subword,
+            fallback_to_rule=req.fallback_to_rule,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"NER failed: {str(e)}")
 
 
 @router.post("/pipeline", response_model=FullPipelineResponse)
